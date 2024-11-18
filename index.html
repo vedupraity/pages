@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>HTML</title>
+  <script type="text/javascript">
+    function updateTitle() {
+      var titleElement = document.getElementById("page-title");
+      if (titleElement) {
+        titleElement.innerHTML = "Updated Page Title";
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <h1 id="page-title">Page Title</h1>
+  <button onclick="updateTitle()">Update Title</button>
+</body>
+
+</html>
