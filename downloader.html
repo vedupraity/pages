@@ -1,1 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Search Music ...</title>
+  <script type="text/javascript">
+    // Function to perform the search
+    function searchMusic() {
+      var query = document.getElementById("search-input").value.trim();
+      if (query === "") {
+        alert("Please enter a search query.");
+        return;
+      }
+
+      // Encode the query for URL
+      var encodedQuery = encodeURIComponent(query);
+
+      // Create the API URL
+      var apiUrl = 'https://saavn.dev/api/search/songs?query=' + encodedQuery;
+
+      // Create a new XMLHttpRequest
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', apiUrl, true);
+
+      // Set up the callback for when the request completes
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) { // DONE
+          if (xhr.status === 200) {
+            try {
+              var response = JSON.parse(xhr.responseText);
+              if (response.success) {
+                renderResults(response.data.results);
+              } else {
+                alert("No results found.");
+              }
+            } catch (e) {
+              alert("Error parsing response.");
+            }
+          } else {
+            alert("Error fetching data from API.");
+          }
+        }
+      };
+
+      // Send the request
+      xhr.send();
+    }
+
+    // Function to render the search results
+    function renderResults(results) {
+      var resultsContainer = document.getElementById("results");
+      resultsContainer.innerHTML = ""; // Clear previous results
+
+      if (results.length === 0) {
+        resultsContainer.innerHTML = "<p>No results found.</p>";
+        return;
+      }
+
+      for (var i = 0; i < results.length; i++) {
+        var song = results[i];
+
+        // Create card element
+        var card = document.createElement("div");
+        card.style.border = "1px solid black";
+        card.style.padding = "10px";
+        card.style.marginBottom = "10px";
+
+        // Image
+        if (song.image && song.image.length > 0 && song.image[0].url) {
+          var img = document.createElement("img");
+          img.src = song.image[0].url;
+          img.alt = song.name;
+          img.style.maxWidth = "100%";
+          card.appendChild(img);
+        }
+
+        // Song Name
+        var songName = document.createElement("h3");
+        songName.innerText = song.name;
+        card.appendChild(songName);
+
+        // Artist Name
+        var artistName = "Unknown Artist";
+        if (song.artists && song.artists.primary && song.artists.primary.length > 0) {
+          artistName = song.artists.primary[0].name;
+        }
+        var artist = document.createElement("p");
+        artist.innerHTML = "<strong>Artist:</strong> " + artistName;
+        card.appendChild(artist);
+
+        // Album Name
+        var albumName = "Unknown Album";
+        if (song.album && song.album.name) {
+          albumName = song.album.name;
+        }
+        var album = document.createElement("p");
+        album.innerHTML = "<strong>Album:</strong> " + albumName;
+        card.appendChild(album);
+
+        // Download Buttons
+        if (song.downloadUrl && song.downloadUrl.length > 0) {
+          var downloadDiv = document.createElement("div");
+          downloadDiv.style.marginTop = "10px";
+
+          for (var j = 0; j < song.downloadUrl.length; j++) {
+            var download = song.downloadUrl[j];
+            var button = document.createElement("button");
+            button.innerText = download.quality;
+            button.onclick = (function (url) {
+              return function () {
+                window.open(url, '_blank');
+              };
+            })(download.url);
+            downloadDiv.appendChild(button);
+          }
+
+          card.appendChild(downloadDiv);
+        }
+
+        // Append card to results
+        resultsContainer.appendChild(card);
+      }
+    }
+
+    // Attach event listener to the search button after the DOM is loaded
+    window.onload = function () {
+      var searchButton = document.getElementById("search-button");
+      if (searchButton.addEventListener) {
+        searchButton.addEventListener("click", searchMusic, false);
+      } else if (searchButton.attachEvent) { // For older IE
+        searchButton.attachEvent("onclick", searchMusic);
+      }
+    };
+  </script>
+</head>
+
+<body>
+  <h1>Search Music ...</h1>
+  <div id="search-container">
+    <input type="text" id="search-input" placeholder="Enter song name or artist">
+    <button id="search-button">Search</button>
+  </div>
+  <div id="results">
+    <!-- Search results will appear here -->
+  </div>
+</body>
+
+</html>
